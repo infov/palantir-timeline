@@ -15,7 +15,7 @@
         var currentTimeFormat;
         var currentYaxisMaxValue;
         var currentZoomScale=1;
-        var Mon3="3M";
+        var Mon3="1q";
         var Mon1="1M";
         var D15="15d";
         var D10="10d";
@@ -47,7 +47,6 @@
         var dispatch = d3.dispatch('customDataFetch','customBrushSelection');
         var stack = d3.layout.stack();
         function exports(_selection) {
-
             _selection.each(function(_data) {
                 //data in the forms of [{date:xxx,count:1},...]
                 handleData(_data);
@@ -55,7 +54,7 @@
                     .range(["#1f77b4", "#2ca02c", "#E53524"]);
                 // selectedColor #dbb510
                 var color_hash = {
-                    0 : ["objectType1", "purple"],
+                    0 : ["objectType", "purple"],
                     1 : ["Insert", "#2ca02c"],
                     2 : ["Remove", "#E53524"]
                 };
@@ -282,7 +281,7 @@
                     .ticks(6)
                     .tickSize(0)
                     .tickFormat(function (d) {
-                        if(d) return d;
+                        if(d&&isInt(d)) return d;
                     });
 
                 var brush = d3.svg.brush()
@@ -399,7 +398,7 @@
                     .attr('y',0)
                     .attr('width',40)
                     .attr('height',40)
-                    .attr('xlink:href','../misc/timeline-loading.gif');
+                    .attr('xlink:href','misc/timeline-loading.gif');
 
                 gGrid=svg.append("g")
                     .attr("class", "grid")
@@ -499,10 +498,6 @@
                     .selectAll("rect")
                     .attr("y", -6)
                     .attr("height", height+7);
-
-                function isInt(n){
-                    return Number(n) === n && n % 1 === 0;
-                }
 
                 function _refreshHoverLinePosition(buttonFlag,xPosition){
                     var time_bin=d3_time_bin.get(currentTimeBin);
@@ -1356,7 +1351,7 @@
                 }
             });
         }
-
+        var isInt=function(n){return Number(n) === n && n % 1 === 0;};
         var showTimelineLoading=function(){gLoading_circle.style('visibility','visible');};
         var hideTimelineLoading=function(){gLoading_circle.style('visibility','hidden');};
         var refreshYaxis=function(yScale){
@@ -1369,7 +1364,7 @@
                     .ticks(6)
                     .tickSize(0)
                     .tickFormat(function (d) {
-                        if(d) return d;
+                        if(d&&isInt(d)) return d;
                     });
             }
         };
@@ -1469,7 +1464,7 @@
         };
 
         var handleData=function(data){
-            dataSet = ["objectType1"].map(function () {
+            dataSet = ["objectType"].map(function () {
                 return data.map(function (d) {
                     return {
                         Date : new Date(d.date),
