@@ -1,0 +1,15 @@
+{
+  "name": "palantir-timeline",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kuroky360/palantir-timeline.git"
+  },
+  "license" : "MIT",
+  "dependencies": {
+    "d3": "3.5.3",
+    "angular":">=1.5.0",
+    "font-awesome":">=4.6.1",
+    "jquery":">=2.1.3"
+  }
+}

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Timeline Demo</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/timeline.css" />
+    <style>
+        body {
+            position: relative;
+            font-family: "Helvetica Neue";
+            width: 1000px;
+            margin: auto;
+            margin-top: 120px;
+            margin-bottom: 4em;
+            height:400px;
+        }
+    </style>
+</head>
+<body ng-controller="timelineCtrl">
+<h1>Timeline Demo</h1>
+<palantir-timeline config="timeline" fetch-data-extent="fetchDataExtent" fetch-data="fetchData" callback="callback"></palantir-timeline>
+</body>
+<script src="node_modules/jquery/dist/jquery.min.js"></script>
+<script src="node_modules/angular/angular.min.js"></script>
+<script src="node_modules/d3/d3.min.js"></script>
+<script src="js/d3-palantir-timeline.js"></script>
+<script>
+    angular.module('dviz',[]).controller('timelineCtrl',['$scope',function($scope){
+
+    }]);
+    angular.element(document).ready(function(){
+        angular.bootstrap(document,['dviz']);
+    })
+</script>
+<script src="js/directive.js"></script>
+</html>

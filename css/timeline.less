@@ -1,0 +1,56 @@
+.timeline-container{
+  width: 100%;
+  height:e("calc(100% - 55px)");
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  border: none;
+  svg{
+    padding-left: 15px;
+    font: 10px sans-serif;
+    .rgroups{
+      >.selected{
+        fill:#dbb510 !important;
+      }
+    }
+    .axis{
+      path,line{
+        fill: none;
+        stroke: black;
+        shape-rendering: crispEdges;
+      }
+      &.y{
+        >.tick{
+          >text{
+            fill:gray;
+          }
+        }
+        path{
+          stroke: none;
+        }
+      }
+    }
+    .grid{
+      .tick{
+        stroke-width: 2px;
+        stroke: #c7c7c7;
+        stroke-opacity: 0.5;
+        shape-rendering: crispEdges;
+      }
+      path{
+        stroke-width: 0;
+      }
+    }
+    .brush{
+      .extent{
+        stroke-width: 2px;
+        fill:url(#timeline-gradient);
+        fill-opacity: .522;
+        shape-rendering: crispEdges;
+      }
+    }
+    .dot {
+      stroke: #000;
+    }
+  }
+}

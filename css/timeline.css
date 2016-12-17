@@ -1,0 +1,45 @@
+.timeline-container {
+  width: 100%;
+  height: calc(100% - 55px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  border: none;
+}
+.timeline-container svg {
+  padding-left: 15px;
+  font: 10px sans-serif;
+}
+.timeline-container svg .rgroups > .selected {
+  fill: #dbb510 !important;
+}
+.timeline-container svg .axis path,
+.timeline-container svg .axis line {
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+.timeline-container svg .axis.y > .tick > text {
+  fill: gray;
+}
+.timeline-container svg .axis.y path {
+  stroke: none;
+}
+.timeline-container svg .grid .tick {
+  stroke-width: 2px;
+  stroke: #c7c7c7;
+  stroke-opacity: 0.5;
+  shape-rendering: crispEdges;
+}
+.timeline-container svg .grid path {
+  stroke-width: 0;
+}
+.timeline-container svg .brush .extent {
+  stroke-width: 2px;
+  fill: url(#timeline-gradient);
+  fill-opacity: .522;
+  shape-rendering: crispEdges;
+}
+.timeline-container svg .dot {
+  stroke: #000;
+}
