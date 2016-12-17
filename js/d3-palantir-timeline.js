@@ -15,7 +15,7 @@
         var currentTimeFormat;
         var currentYaxisMaxValue;
         var currentZoomScale=1;
-        var Mon3="1q";
+        var Mon3="3M";
         var Mon1="1M";
         var D15="15d";
         var D10="10d";
@@ -43,9 +43,6 @@
         var gLoading_circle;
         var xScale;
         var hackBarWidth;
-        var currentViewRange;//msec
-        var currentDataRangeStart;//msec
-        var currentDataRangeEnd;//msec
         var timebin_zoomstart;
         var dispatch = d3.dispatch('customDataFetch','customBrushSelection');
         var stack = d3.layout.stack();
@@ -1067,20 +1064,8 @@
                 }
 
                 function zoomend(){
-                    var currentViewStartDate=+xScale.domain()[0];
-                    var currentViewEndDate=+xScale.domain()[1];
                     var request={timeInterval:currentTimeBin};
-                    currentViewRange=currentViewEndDate-currentViewStartDate;
-                    if(timebin_zoomstart==currentTimeBin){
-                        if(currentViewEndDate>currentDataRangeEnd||currentViewStartDate<currentDataRangeStart){
-                            request.minDate=currentViewStartDate-currentViewRange;
-                            request.maxDate=currentViewEndDate+currentViewRange;
-                            showTimelineLoading();
-                            dispatch.customDataFetch(request);
-                        }
-                    }else{
-                        request.minDate=currentViewStartDate-currentViewRange;
-                        request.maxDate=currentViewEndDate+currentViewRange;
+                    if(timebin_zoomstart!==currentTimeBin){
                         showTimelineLoading();
                         dispatch.customDataFetch(request);
                     }
@@ -1374,36 +1359,6 @@
 
         var showTimelineLoading=function(){gLoading_circle.style('visibility','visible');};
         var hideTimelineLoading=function(){gLoading_circle.style('visibility','hidden');};
-
-        var getAppropriateDomainAndBinSize=function(min,max){
-            //set the domain for xAxis
-            var dataMinDate=new Date(min);
-            minDate=_calculateMinDateForDomain(dataMinDate);
-            maxDate=_calculateMaxDateForDomain(dataMinDate);
-            //calculate the view range
-            currentViewRange=(+maxDate)-(+minDate);
-            //calculate the start end for the data range
-            currentDataRangeStart=(+minDate)-currentViewRange;
-            currentDataRangeEnd=(+maxDate)+currentViewRange;
-            //set the current time bin
-            currentTimeBin=Mon3;
-            return {
-                minDate:min,
-                maxDate:+maxDate,
-                timeInterval:Mon3
-            };
-
-            function _calculateMaxDateForDomain(minDate){
-                var year=minDate.getFullYear();
-                return new Date(year+6,0);
-            }
-
-            function _calculateMinDateForDomain(minDate){
-                var year=minDate.getFullYear();
-                return new Date(year-3,0);
-            }
-        };
-
         var refreshYaxis=function(yScale){
             gYAxis.call(_make_y_axis(yScale));
             hideTimelineLoading();
@@ -1534,15 +1489,76 @@
         exports.refreshYaxis=refreshYaxis;
         exports.refreshBarChart=refreshBarChart;
         exports.handleData=handleData;
-        exports.getAppropriateDomainAndBinSize=getAppropriateDomainAndBinSize;
+
+        exports.domainAndBinsize=function(min,max){
+            if (!arguments.length) return {domain:[+minDate,+maxDate],binSize:currentTimeBin};
+            //set the domain for xAxis
+            var domain=_calculateDomainExtent(min,max);
+            minDate=domain.minDate;
+            maxDate=domain.maxDate;
+            //set the current time bin
+            currentTimeBin=Mon3;
+            return this;
+
+            function _calculateDomainExtent(min,max){
+                var dataMinDate=new Date(min);
+                var dataMaxDate=new Date(max);
+                var dataMinYear=dataMinDate.getFullYear();
+                var dataMaxYear=dataMaxDate.getFullYear();
+                var diff=dataMaxYear-dataMinYear;
+                var minDate,maxDate;
+                switch (diff){
+                    case 0:
+                        minDate=new Date(dataMinYear-3,0);
+                        maxDate=new Date(dataMaxYear+6,0);
+                        break;
+                    case 1:
+                        minDate=new Date(dataMinYear-3,0);
+                        maxDate=new Date(dataMaxYear+5,0);
+                        break;
+                    case 2:
+                        minDate=new Date(dataMinYear-3,0);
+                        maxDate=new Date(dataMaxYear+4,0);
+                        break;
+                    case 3:
+                        minDate=new Date(dataMinYear-2,0);
+                        maxDate=new Date(dataMaxYear+4,0);
+                        break;
+                    case 4:
+                        minDate=new Date(dataMinYear-2,0);
+                        maxDate=new Date(dataMaxYear+3,0);
+                        break;
+                    case 5:
+                        minDate=new Date(dataMinYear-2,0);
+                        maxDate=new Date(dataMaxYear+2,0);
+                        break;
+                    case 6:
+                        minDate=new Date(dataMinYear-1,0);
+                        maxDate=new Date(dataMaxYear+2,0);
+                        break;
+                    case 7:
+                        minDate=new Date(dataMinYear-1,0);
+                        maxDate=new Date(dataMaxYear+1,0);
+                        break;
+                    case 8:
+                        minDate=new Date(dataMinYear-1,0);
+                        maxDate=new Date(dataMaxYear+1,0);
+                        break;
+                    default:
+                        minDate=new Date(dataMinYear-1,0);
+                        maxDate=new Date(dataMinYear+8,0);
+                        break;
+                }
+                return {
+                    minDate:minDate,
+                    maxDate:maxDate
+                };
+            }
+        };
 
         exports.refreshTimeline=function(_){
-            var currentViewStartDate=+xScale.domain()[0];
-            var currentViewEndDate=+xScale.domain()[1];
             this.handleData(_);
             this.refreshYaxis(this.refreshBarChart(dataSet));
-            currentDataRangeStart=currentViewStartDate-currentViewRange;
-            currentDataRangeEnd=currentViewEndDate+currentViewRange;
             return this;
         };
 

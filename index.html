@@ -19,19 +19,12 @@
 </head>
 <body ng-controller="timelineCtrl">
 <h1>Timeline Demo</h1>
-<palantir-timeline config="timeline" fetch-data-extent="fetchDataExtent" fetch-data="fetchData" callback="callback"></palantir-timeline>
+<palantir-timeline config="config"></palantir-timeline>
 </body>
 <script src="node_modules/jquery/dist/jquery.min.js"></script>
 <script src="node_modules/angular/angular.min.js"></script>
 <script src="node_modules/d3/d3.min.js"></script>
 <script src="js/d3-palantir-timeline.js"></script>
-<script>
-    angular.module('dviz',[]).controller('timelineCtrl',['$scope',function($scope){
-
-    }]);
-    angular.element(document).ready(function(){
-        angular.bootstrap(document,['dviz']);
-    })
-</script>
+<script src="js/main.js"></script>
 <script src="js/directive.js"></script>
 </html>
