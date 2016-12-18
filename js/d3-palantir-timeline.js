@@ -1372,6 +1372,7 @@
         var refreshBarChart=function(data){
             var mayContainsHackBarWidth=false;
             switch(currentTimeBin){
+                case Mon3:
                 case D15:
                 case D10:
                 case D4:
@@ -1397,7 +1398,7 @@
                     return -yScale(d.y) + height;
                 })
                 .attr("width",function(d){
-                    return _generateBarWidthForDayTimeBin(new Date(d.Date),mayContainsHackBarWidth);
+                    return _generateBarWidthForDayTimeBin(d.Date,mayContainsHackBarWidth);
                 })
                 .style("fill-opacity", 1);
 
@@ -1412,7 +1413,7 @@
                     return -yScale(d.y) + height;
                 })
                 .attr("width",function(d){
-                    return _generateBarWidthForDayTimeBin(new Date(d.Date),mayContainsHackBarWidth);
+                    return _generateBarWidthForDayTimeBin(d.Date,mayContainsHackBarWidth);
                 })
                 .style("fill-opacity", 1);
 
@@ -1423,9 +1424,17 @@
                 if(!possibility) return currentBarWidth;
                 var months_Day31=[0,2,4,6,7,9,11];
                 var months_Day30=[3,5,8,10];
-                var leapFlag=_checkIfLeapYear(date.getFullYear());
+                var year=date.getFullYear();
+                var leapFlag=_checkIfLeapYear(year);
                 var month=date.getMonth();
                 var day=date.getDate();
+                if(currentTimeBin==Mon3){
+                    if(month==0||month==3||month==6||month==9){
+                        return xScale(new Date(year,month+3))-xScale(date)
+                    }else {
+                        return currentBarWidth;
+                    }
+                }
                 if(month===1){
                     if(day===16&&currentTimeBin==D15){
                         if(leapFlag) return hackBarWidth.feb_29.day_15.start_16;
