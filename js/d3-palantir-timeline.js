@@ -1083,7 +1083,7 @@
                         if(!gZoomAnimationLeft.selectAll('path').empty()) gZoomAnimationLeft.selectAll('path').remove();
                         if(!gZoomAnimationRight.selectAll('path').empty()) gZoomAnimationRight.selectAll('path').remove();
                         gZoomAnimationLeft.append('path')
-                            .attr('d', function(d) {
+                            .attr('d', function() {
                                 var x = d3_mouse_x-45, y = d3_mouse_y-7;
                                 return 'M ' + x +' '+ y + ' l 0 14 l -7 -7 z';
                             })
@@ -1091,19 +1091,19 @@
                             .style('stroke','black')
                             .style('opacity',1)
                             .transition().duration(200)
-                            .attr('d', function(d) {
+                            .attr('d', function() {
                                 var x = d3_mouse_x-55, y = d3_mouse_y-7;
                                 return 'M ' + x +' '+ y + ' l 0 14 l -7 -7 z';
                             })
                             .transition().duration(450)
-                            .attr('d', function(d) {
+                            .attr('d', function() {
                                 var x = d3_mouse_x-65, y = d3_mouse_y-7;
                                 return 'M ' + x +' '+ y + ' l 0 14 l -7 -7 z';
                             })
                             .style('opacity',0).remove();
 
                         gZoomAnimationRight.append('path')
-                            .attr('d', function(d) {
+                            .attr('d', function() {
                                 var x = d3_mouse_x+45, y = d3_mouse_y-7;
                                 return 'M ' + x +' '+ y + ' l 0 14 l 7 -7 z';
                             })
@@ -1111,12 +1111,12 @@
                             .style('stroke','black')
                             .style('opacity',1)
                             .transition().duration(200)
-                            .attr('d', function(d) {
+                            .attr('d', function() {
                                 var x = d3_mouse_x+55, y = d3_mouse_y-7;
                                 return 'M ' + x +' '+ y + ' l 0 14 l 7 -7 z';
                             })
                             .transition().duration(450)
-                            .attr('d', function(d) {
+                            .attr('d', function() {
                                 var x = d3_mouse_x+65, y = d3_mouse_y-7;
                                 return 'M ' + x +' '+ y + ' l 0 14 l 7 -7 z';
                             })
@@ -1472,7 +1472,6 @@
                     };
                 });
             });
-            //2007-10-9 8:00:00->2015-1-22 8:00:00
             stack(dataSet);
             currentYaxisMaxValue=d3.max(dataSet, function (d) {
                 return d3.max(d, function (d) {
