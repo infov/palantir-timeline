@@ -45,12 +45,12 @@
         var hackBarWidth;
         var timebin_zoomstart;
         var dispatch = d3.dispatch('customDataFetch','customBrushSelection');
-        var stack = d3.layout.stack();
+        var stack = d3.stack();
         function exports(_selection) {
             _selection.each(function(_data) {
                 //data in the forms of [{date:xxx,count:1},...]
                 handleData(_data);
-                var color = d3.scale.ordinal()
+                var color = d3.scaleOrdinal()
                     .range(["#1f77b4", "#2ca02c", "#E53524"]);
                 // selectedColor #dbb510
                 var color_hash = {
@@ -98,7 +98,7 @@
                 };
                 var debounceFn_zoomAnimation=null;
                 // d3.locale for EN
-                var myFormatters = d3.locale({
+                d3.formatDefaultLocale({
                     "decimal": ".",
                     "thousands": ",",
                     "grouping": [3],
@@ -112,25 +112,25 @@
                     "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
                     "shortMonths": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
                 });
+                var xAxis_yearFormat = d3.timeFormat("%Y");
+                var xAxis_monthFormat= d3.timeFormat("%b");
+                var xAxis_monthDayFormat=d3.timeFormat("%b %e");
+                var xAxis_hourFormat=d3.timeFormat("%I%p");
+                var xAxis_minuteFormat=d3.timeFormat("%M");
+                var xAxis_secondFormat=d3.timeFormat("%S");
 
-                var xAxis_yearFormat = myFormatters.timeFormat("%Y");
-                var xAxis_monthFormat= myFormatters.timeFormat("%b");
-                var xAxis_monthDayFormat=myFormatters.timeFormat("%b %e");
-                var xAxis_hourFormat=myFormatters.timeFormat("%I%p");
-                var xAxis_minuteFormat=myFormatters.timeFormat("%M");
-                var xAxis_secondFormat=myFormatters.timeFormat("%S");
+                var customTimeFormat=function(date){
+                    if(date.getSeconds()) return d3.timeFormat(':%S')(date);
+                    if(date.getMinutes()) return d3.timeFormat('%I:%M')(date);
+                    if(date.getHours()) return d3.timeFormat('%I %p')(date);
+                    if(date.getDay() && date.getDate() != 1) return d3.timeFormat('%a %d')(date);
+                    if(date.getDate()!=1) return d3.timeFormat('%b %d')(date);
+                    if(date.getMonth()) return d3.timeFormat('%B')(date);
+                    return d3.timeFormat('%Y')(date);
+                };
 
-                var customTimeFormat = myFormatters.timeFormat.multi([
-                    [":%S", function(d) { return d.getSeconds(); }],
-                    ["%I:%M", function(d) { return d.getMinutes(); }],
-                    ["%I %p", function(d) { return d.getHours(); }],
-                    ["%a %d", function(d) { return d.getDay() && d.getDate() != 1; }],
-                    ["%b %d", function(d) { return d.getDate() != 1; }],
-                    ["%B", function(d) { return d.getMonth(); }],
-                    ["%Y", function() { return true; }]
-                ]);
                 //Set up scales
-                xScale = d3.time.scale()
+                xScale = d3.scaleTime()
                     .domain([minDate, maxDate])
                     .rangeRound([0, width]).nice();
 
@@ -220,83 +220,75 @@
 
                 // set the dateformat for hoverline axisExtent ...
                 var commonDateFormat={
-                    month:[myFormatters.timeFormat('%b. %Y'),60,100],
-                    day:[myFormatters.timeFormat('%a %d, %b. %Y'),100,140],
-                    hour:[myFormatters.timeFormat('%a %d, %b. %Y, %I%p'),140,180],
-                    minute:[myFormatters.timeFormat('%a %d, %b. %Y, %I:%M %p'),152,192],
-                    second:[myFormatters.timeFormat('%a %d, %b. %Y, %I:%M:%S %p'),168,208]
+                    month:[d3.timeFormat('%b. %Y'),60,100],
+                    day:[d3.timeFormat('%a %d, %b. %Y'),100,140],
+                    hour:[d3.timeFormat('%a %d, %b. %Y, %I%p'),140,180],
+                    minute:[d3.timeFormat('%a %d, %b. %Y, %I:%M %p'),152,192],
+                    second:[d3.timeFormat('%a %d, %b. %Y, %I:%M:%S %p'),168,208]
                 };
                 // 1s 2s 5s 10s 30s 1m 5m 10m 30m 1h 6h 12h 1d 4d 10d 15d 1month 3month
                 var d3_time_zoomScaleSteps=[2,6,10,22,70,180,450,1000,4000,9600,18000,30000,230000,480000,1340000,3200000,4000000,4000000];
                 // month day hour minute second
                 var d3_time_tickFormatScaleSteps=[8,200,5800,220000,9000000];
                 var d3_time_bin=d3.map({
-                    '1q':_generateXaxis([d3.time.month,3,'3 months',d3.time.year,null,commonDateFormat.month,2]),//<2
-                    '1M':_generateXaxis([d3.time.month,1,'1 month',d3.time.month,tickFormatFn.month,commonDateFormat.month,6]),//<6
-                    '15d':_generateXaxis([d3.time.day,15,'15 days',d3.time.month,tickFormatFn.month,commonDateFormat.day,10]),//<10
-                    '10d':_generateXaxis([d3.time.day,10,'10 days',d3.time.month,tickFormatFn.month,commonDateFormat.day,22]),//<22
-                    '4d':_generateXaxis([d3.time.day,4,'4 days',d3.time.month,tickFormatFn.month,commonDateFormat.day,70]),//<70
-                    '1d':_generateXaxis([d3.time.day,1,'1 day',d3.time.day,tickFormatFn.day,commonDateFormat.day,180]),//<180
-                    '12h':_generateXaxis([d3.time.hour,12,'12 hours',d3.time.day,tickFormatFn.day,commonDateFormat.hour,450]),//<450
-                    '6h':_generateXaxis([d3.time.hour,6,'6 hours',d3.time.day,tickFormatFn.day,commonDateFormat.hour,1000]),//<1000
-                    '1h':_generateXaxis([d3.time.hour,1,'1 hour',d3.time.hour,tickFormatFn.hour,commonDateFormat.hour,4000]),//<4000
-                    '30m':_generateXaxis([d3.time.minute,30,'30 minutes',d3.time.hour,tickFormatFn.hour,commonDateFormat.minute,9600]),//<9600
-                    '10m':_generateXaxis([d3.time.minute,10,'10 minutes',d3.time.hour,tickFormatFn.hour,commonDateFormat.minute,18000]),//<18000
-                    '5m':_generateXaxis([d3.time.minute,5,'5 minutes',d3.time.hour,tickFormatFn.hour,commonDateFormat.minute,30000]),//<30000
-                    '1m':_generateXaxis([d3.time.minute,1,'1 minute',d3.time.minute,tickFormatFn.minute,commonDateFormat.minute,230000]),//<230000
-                    '30s':_generateXaxis([d3.time.second,30,'30 seconds',d3.time.minute,tickFormatFn.minute,commonDateFormat.second,480000]),//<480000
-                    '10s':_generateXaxis([d3.time.second,10,'10 seconds',d3.time.minute,tickFormatFn.minute,commonDateFormat.second,1340000]),//<1340000
-                    '5s':_generateXaxis([d3.time.second,5,'5 seconds',d3.time.minute,tickFormatFn.minute,commonDateFormat.second,3200000]),//<3200000
-                    '2s':_generateXaxis([d3.time.second,2,'2 seconds',d3.time.minute,tickFormatFn.minute,commonDateFormat.second,4000000]),//<4000000
-                    '1s':_generateXaxis([d3.time.second,1,'1 second',d3.time.second,tickFormatFn.second,commonDateFormat.second,4000000]) //>4000000
+                    '1q':_generateXaxis([d3.timeMonth,3,'3 months',d3.timeYear,null,commonDateFormat.month,2]),//<2
+                    '1M':_generateXaxis([d3.timeMonth,1,'1 month',d3.timeMonth,tickFormatFn.month,commonDateFormat.month,6]),//<6
+                    '15d':_generateXaxis([d3.timeDay,15,'15 days',d3.timeMonth,tickFormatFn.month,commonDateFormat.day,10]),//<10
+                    '10d':_generateXaxis([d3.timeDay,10,'10 days',d3.timeMonth,tickFormatFn.month,commonDateFormat.day,22]),//<22
+                    '4d':_generateXaxis([d3.timeDay,4,'4 days',d3.timeMonth,tickFormatFn.month,commonDateFormat.day,70]),//<70
+                    '1d':_generateXaxis([d3.timeDay,1,'1 day',d3.timeDay,tickFormatFn.day,commonDateFormat.day,180]),//<180
+                    '12h':_generateXaxis([d3.timeHour,12,'12 hours',d3.timeDay,tickFormatFn.day,commonDateFormat.hour,450]),//<450
+                    '6h':_generateXaxis([d3.timeHour,6,'6 hours',d3.timeDay,tickFormatFn.day,commonDateFormat.hour,1000]),//<1000
+                    '1h':_generateXaxis([d3.timeHour,1,'1 hour',d3.timeHour,tickFormatFn.hour,commonDateFormat.hour,4000]),//<4000
+                    '30m':_generateXaxis([d3.timeMinute,30,'30 minutes',d3.timeHour,tickFormatFn.hour,commonDateFormat.minute,9600]),//<9600
+                    '10m':_generateXaxis([d3.timeMinute,10,'10 minutes',d3.timeHour,tickFormatFn.hour,commonDateFormat.minute,18000]),//<18000
+                    '5m':_generateXaxis([d3.timeMinute,5,'5 minutes',d3.timeHour,tickFormatFn.hour,commonDateFormat.minute,30000]),//<30000
+                    '1m':_generateXaxis([d3.timeMinute,1,'1 minute',d3.timeMinute,tickFormatFn.minute,commonDateFormat.minute,230000]),//<230000
+                    '30s':_generateXaxis([d3.timeSecond,30,'30 seconds',d3.timeMinute,tickFormatFn.minute,commonDateFormat.second,480000]),//<480000
+                    '10s':_generateXaxis([d3.timeSecond,10,'10 seconds',d3.timeMinute,tickFormatFn.minute,commonDateFormat.second,1340000]),//<1340000
+                    '5s':_generateXaxis([d3.timeSecond,5,'5 seconds',d3.timeMinute,tickFormatFn.minute,commonDateFormat.second,3200000]),//<3200000
+                    '2s':_generateXaxis([d3.timeSecond,2,'2 seconds',d3.timeMinute,tickFormatFn.minute,commonDateFormat.second,4000000]),//<4000000
+                    '1s':_generateXaxis([d3.timeSecond,1,'1 second',d3.timeSecond,tickFormatFn.second,commonDateFormat.second,4000000]) //>4000000
                 });
                 currentTimeFormat=d3_time_bin.get(currentTimeBin)[5][0];
 
                 function _generateXaxis(binArray){
-                    binArray.xAxis=d3.svg.axis()
-                        .scale(xScale)
-                        .orient("bottom")
+                    binArray.xAxis=d3.axisBottom(xScale)
                         .ticks(binArray[3],1)
-                        .outerTickSize(0)
+                        .tickSizeOuter(0)
                         .tickPadding(5)
                         .tickFormat(binArray[4]||customTimeFormat);
                     return binArray;
                 }
 
                 _calculateCurrentBarWidth(d3_time_bin.get(currentTimeBin));
-                var yScale = d3.scale.linear()
+                var yScale = d3.scaleLinear()
                     .domain([0,currentYaxisMaxValue])
                     .range([height, 0]);
-                var xAxis = d3.svg.axis()
-                    .scale(xScale)
-                    .orient("bottom")
-                    .ticks(d3.time.year,1)
-                    .outerTickSize(0)
+                var xAxis = d3.axisBottom(xScale)
+                    .ticks(d3.timeYear,1)
+                    .tickSizeOuter(0)
                     .tickPadding(5)
                     .tickFormat(customTimeFormat);
 
-                var yAxis = d3.svg.axis()
-                    .scale(yScale)
-                    .orient("left")
+                var yAxis = d3.axisLeft(yScale)
                     .ticks(6)
                     .tickSize(0)
                     .tickFormat(function (d) {
                         if(d&&isInt(d)) return d;
                     });
 
-                var brush = d3.svg.brush()
-                    .x(xScale)
-                    .on('brushstart',brushstart)
+                var brush = d3.brush()
+                    .on('start',brushstart)
                     .on('brush',brushed)
-                    .on('brushend',brushend);
+                    .on('end',brushend);
 
-                var zoom = d3.behavior.zoom()
+                var zoom = d3.zoom()
                     .scaleExtent([1,20000000])
-                    .x(xScale)
-                    .scale(1)
-                    .on('zoomstart',zoomstart)
+                    .scaleTo(1)
+                    .on('start',zoomstart)
                     .on("zoom", zoomed)
-                    .on('zoomend',debounce(zoomend,50));
+                    .on('end',debounce(zoomend,50));
 
                 //Create SVG element
                 if(!svgContainer){
@@ -1575,7 +1567,10 @@
             height = parseInt(_x)-margin.top-margin.bottom;
             return this;
         };
-        d3.rebind(exports, dispatch, 'on');
+        exports.on=function(){
+            var value=dispatch.on.apply(dispatch,arguments);
+            return value==dispatch?exports:value;
+        };
         return exports;
     };
 }(window.d3);
