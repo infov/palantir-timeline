@@ -395,7 +395,7 @@
                 gGrid=svg.append("g")
                     .attr("class", "grid")
                     .call(make_y_axis()
-                        .tickSize(-width, 0, 0)
+                        .tickSize(-width,0)
                         .tickFormat("")
                     ); // elements are drawn in the order they are specified in the document, so later elements will be drawn on top of earlier elements.
 
@@ -1015,9 +1015,7 @@
 
                 // function for the y grid lines
                 function make_y_axis() {
-                    return　d3.svg.axis()
-                        .scale(yScale)
-                        .orient("left")
+                    return　d3.axisLeft(yScale)
                         .ticks(5);
                 }
 
