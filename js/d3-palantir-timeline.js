@@ -424,7 +424,7 @@
                     .duration(function (d, i) {
                         return 10 * i;// from 100->10
                     })
-                    .ease("linear")
+                    // .ease("linear")
                     .attr("x", function (d) {
                         return xScale(d.Date);
                     })
@@ -1367,7 +1367,7 @@
                     mayContainsHackBarWidth=true;
                     break;
             }
-            var yScale=d3.scale.linear()
+            var yScale=d3.scaleLinear()
                 .domain([0,currentYaxisMaxValue])
                 .range([height, 0]);
             //refresh grid before barChart
@@ -1380,7 +1380,7 @@
                 return xScale(d.Date);
             })
                 .attr("y", function (d) {
-                    return -( -yScale(d.y0) - yScale(d.y) + height * 2);
+                    return -(- yScale(d.y) + height * 2);
                 })
                 .attr("height", function (d) {
                     return -yScale(d.y) + height;
@@ -1395,7 +1395,7 @@
                     return xScale(d.Date);
                 })
                 .attr("y", function (d) {
-                    return -( -yScale(d.y0) - yScale(d.y) + height * 2);
+                    return -(- yScale(d.y) + height * 2);
                 })
                 .attr("height", function (d) {
                     return -yScale(d.y) + height;
@@ -1451,11 +1451,9 @@
             }
 
             function _make_y_axis_grid(yScale) {
-                return　d3.svg.axis()
-                    .scale(yScale)
-                    .orient("left")
+                return　d3.axisLeft(yScale)
                     .ticks(6)
-                    .tickSize(-width, 0, 0)
+                    .tickSize(-width,0)
                     .tickFormat("");
             }
         };
