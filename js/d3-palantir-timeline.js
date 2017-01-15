@@ -285,11 +285,9 @@
 
                 var zoom = d3.zoom()
                     .scaleExtent([1,20000000])
-                    .scaleTo(1)
                     .on('start',zoomstart)
                     .on("zoom", zoomed)
                     .on('end',debounce(zoomend,50));
-
                 //Create SVG element
                 if(!svgContainer){
                     svgContainer=d3.select(this).append("svg")
@@ -301,7 +299,7 @@
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
                     .call(zoom)
                     .on('dblclick.zoom',null);// disable double click zoom
-
+                zoom.scaleTo(svg,1);
                 var defs=svg.append('defs');
                 defs.append('clipPath')
                     .attr("id", "clip")
@@ -1471,10 +1469,10 @@
                     };
                 });
             });
-            stack(dataSet);
+            // stack(dataSet);
             currentYaxisMaxValue=d3.max(dataSet, function (d) {
                 return d3.max(d, function (d) {
-                    return d.y0 + d.y;
+                    return d.y;
                 });
             });
         };
