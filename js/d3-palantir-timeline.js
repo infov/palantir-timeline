@@ -299,7 +299,6 @@
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
                     .call(zoom)
                     .on('dblclick.zoom',null);// disable double click zoom
-                zoom.scaleTo(svg,1);
                 var defs=svg.append('defs');
                 defs.append('clipPath')
                     .attr("id", "clip")
@@ -430,7 +429,7 @@
                         return xScale(d.Date);
                     })
                     .attr("y", function (d) {
-                        return  - ( - yScale(d.y0) - yScale(d.y) + height * 2);
+                        return  - (- yScale(d.y) + height * 2);
                     })
                     .attr("height", function (d) {
                         return -yScale(d.y) + height;
@@ -1041,8 +1040,8 @@
 
                 function zoomed() {
                     _clearBrush(1);
-                    _showZoomAnimation(d3.event.scale,d3.mouse(this)[0],d3.mouse(this)[1]);
-                    _refreshXaxisByZoomScale(d3.event.scale,d3.event.button,d3.mouse(this)[0]);
+                    _showZoomAnimation(d3.event.transform.k,d3.mouse(this)[0],d3.mouse(this)[1]);
+                    _refreshXaxisByZoomScale(d3.event.transform.k,d3.event.button,d3.mouse(this)[0]);
                     refreshYaxis(refreshBarChart(dataSet));
                 }
 
@@ -1337,6 +1336,7 @@
                         }).attr('y2',9);
                     }
                 }
+                zoom.scaleTo(svg,1);
             });
         }
         var isInt=function(n){return Number(n) === n && n % 1 === 0;};
