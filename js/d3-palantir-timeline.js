@@ -279,6 +279,7 @@
                     });
 
                 var brush = d3.brushX()
+                    .extent([[0,0],[width,height]])
                     .on('start',brushstart)
                     .on('brush',brushed)
                     .on('end',brushend);
@@ -490,7 +491,6 @@
                 function _refreshHoverLinePosition(buttonFlag,xPosition){
                     var time_bin=d3_time_bin.get(currentTimeBin);
                     var rectWidth=time_bin[5][1];
-
                     if(buttonFlag===2){
                         gHoverLine.style('visibility','hidden');
                         return;
