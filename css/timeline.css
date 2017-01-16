@@ -34,11 +34,9 @@
 .timeline-container svg .grid path {
   stroke-width: 0;
 }
-.timeline-container svg .brush .extent {
+.timeline-container svg .brush .selection {
   stroke-width: 2px;
   fill: url(#timeline-gradient);
-  fill-opacity: .522;
-  shape-rendering: crispEdges;
 }
 .timeline-container svg .dot {
   stroke: #000;

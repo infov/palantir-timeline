@@ -58,7 +58,6 @@
                     1 : ["Insert", "#2ca02c"],
                     2 : ["Remove", "#E53524"]
                 };
-                var previousBrushWidthIsZero;//boolean
                 hackBarWidth={
                     feb_28:{
                         day_15:{
@@ -280,7 +279,6 @@
 
                 var brush = d3.brushX()
                     .extent([[0,0],[width,height]])
-                    .on('start',brushstart)
                     .on('brush',brushed)
                     .on('end',brushend);
 
@@ -468,13 +466,13 @@
                     }else if(d3.event.button===2){
                         d3.event.stopImmediatePropagation();
                         svg.on('mousedown.zoom').call(this);
-                        d3.select('.brush .background').style('cursor','move');
+                        d3.select('.brush .overlay').style('cursor','move');
                         _clearBrush(2);
                     }
                 })
                     .on('mouseup',function(){
                         if(d3.event.button===2){
-                            d3.select('.brush .background').style('cursor','default');
+                            d3.select('.brush .overlay').style('cursor','default');
                         }
                     })
                     .on('mousemove',function(){
@@ -504,10 +502,10 @@
                     gHoverLine.style('visibility','visible');
                 }
 
-                var gXBrush_Extent=d3.select('.brush .extent');
-                var gXBrush_Background=d3.select('.brush .background');
+                var gXBrush_Extent=d3.select('.brush .selection');
+                var gXBrush_Background=d3.select('.brush .overlay');
                 gXBrush_Extent.on('mouseover',function(){
-                    if(gXBrush_Extent.attr('width')!="0"){
+                    if(d3.brushSelection(gXBrush.node())){
                         gTips.style('visibility','visible');
                         gXBrush_Extent.style('stroke','#686A6B');
                         gXBrush_Extent.style('cursor','move');
@@ -520,10 +518,10 @@
                         gXBrush_Extent.style('stroke','none');
                     })
                     .on('mousemove',function(){
-                        if(gXBrush_Extent.attr('width')!="0") d3.event.stopPropagation();
+                        if(d3.brushSelection(gXBrush.node())) d3.event.stopPropagation();
                     })
                     .on('mousedown',function(){
-                        if(gXBrush_Extent.attr('width')=="0") gHoverLine.style('visibility','visible');
+                        if(!d3.brushSelection(gXBrush.node())) gHoverLine.style('visibility','visible');
                     });
 
                 gXBrush_Background.style('cursor','default')
@@ -806,10 +804,6 @@
                     .style('visibility','hidden')
                     .style("fill", "url(#timeline-loading)");
 
-                function brushstart(){
-                    if(gXBrush_Extent.attr('width')=="0") previousBrushWidthIsZero=true; else previousBrushWidthIsZero=false;
-                }
-
                 function debounce(callback,delay){
                     var timeoutID;
                     delay=delay||0;
@@ -824,9 +818,12 @@
 
                 // selction area
                 function brushed(){
-                    var selection=d3.event.selection;
+                    var selection;
+                    if(!(selection=d3.event.selection)) return;
                     var start=selection[0];
                     var end=selection[1];
+                    var start_date=xScale.invert(start);
+                    var end_date=xScale.invert(end);
                     if(start===end){
                         gClose.style('visibility','hidden');
                         gTips.style('visibility','hidden');
@@ -846,23 +843,23 @@
                         .attr('width',gTipsWidth);
                     gTips.select('.startText')
                         .attr('x',start+20-gTipsWidth-10)
-                        .text(currentTimeFormat(start));
+                        .text(currentTimeFormat(start_date));
                     gTips.select('.endText')
                         .attr('x',start+20-gTipsWidth-10)
-                        .text(currentTimeFormat(end));
+                        .text(currentTimeFormat(end_date));
                     gXBrush_Extent.style('stroke','#686A6B');
                     _highlightBarChart();
                 }
 
                 function brushend(){
-                    if(gXBrush_Extent.attr('width')!=="0"){
-                        _postCurrentBrushExtent();
-                    }else if(!previousBrushWidthIsZero) {
-                        _postCurrentBrushExtent();
-                    }
+                    if(d3.brushSelection(gXBrush.node())) _postCurrentBrushExtent();
                 }
+
                 // return hacked range for brush extent
                 function _calculateHackBrushExtent(){
+                    var node=gXBrush.node();
+                    var startDate=xScale.invert(d3.brushSelection(node)[0]);
+                    var endDate=xScale.invert(d3.brushSelection(node)[1]);
                     var rects=groups.selectAll("rect");
                     var brushArrayOnlyLeftIn=[];
                     var brushArrayOnlyRightIn=[];
@@ -872,8 +869,8 @@
                     };
                     rects.each(function(d){
                         var maxDate=_calculateMaxDateForOneBar(d.Date);//msec
-                        var is_brushed_left = +brush.extent()[0] <= +d.Date && +d.Date <= +brush.extent()[1];
-                        var is_brushed_right= +brush.extent()[0] <= maxDate && maxDate <= +brush.extent()[1];
+                        var is_brushed_left = +startDate <= +d.Date && +d.Date <= +endDate;
+                        var is_brushed_right= +startDate <= maxDate && maxDate <= +endDate;
                         if(is_brushed_left){
                             if(!is_brushed_right) brushArrayOnlyLeftIn.push(+d.Date)
                         }else{
@@ -893,10 +890,15 @@
 
                 function _highlightBarChart(){
                     var rects=groups.selectAll("rect");
+                    var selection=d3.event.selection;
+                    var start=selection[0];
+                    var end=selection[1];
+                    var start_date=xScale.invert(start);
+                    var end_date=xScale.invert(end);
                     rects.classed('selected',function(d){
-                        var is_brushed_left = +brush.extent()[0] <= +d.Date && +d.Date <= +brush.extent()[1];
+                        var is_brushed_left = +start_date <= +d.Date && +d.Date <= +end_date;
                         var maxDate=_calculateMaxDateForOneBar(d.Date);//msec
-                        var is_brushed_right= +brush.extent()[0] <= maxDate && maxDate <= +brush.extent()[1];
+                        var is_brushed_right= +start_date <= maxDate && maxDate <= +end_date;
                         if(!is_brushed_left) return;
                         if(is_brushed_right) return true;
                     });
@@ -971,14 +973,14 @@
                 // flag 0:from close button  1:from zoom fn   2:from right button
                 function _clearBrush(flag){
                     if(!flag){
-                        brush.clear();
+                        gXBrush.call(brush.move,null);
                         gXBrush.call(brush);
                         gClose.style('visibility','hidden');
                         gTips.style('visibility','hidden');
                         _postCurrentBrushExtent();
                     }else{
-                        if(gXBrush_Extent.attr('width')!=="0"){
-                            brush.clear();
+                        if(d3.brushSelection(gXBrush.node())){
+                            gXBrush.call(brush.move,null);
                             gXBrush.call(brush);
                             gClose.style('visibility','hidden');
                             gTips.style('visibility','hidden');
@@ -994,21 +996,25 @@
                 }
 
                 function _postCurrentBrushExtent(){
-                    var brushExtent;
-                    if(gXBrush_Extent.attr('width')=="0"){
+                    var brushExtent,startDate,endDate;
+                    var node=gXBrush.node();
+                    var selection=d3.brushSelection(node);
+                    if(!selection){
                         brushExtent=null;
                     }else{
+                        startDate=xScale.invert(selection[0]);
+                        endDate=xScale.invert(selection[1]);
                         var fakeExtent=_calculateHackBrushExtent();
-                        if(!fakeExtent.fakeStartDate) fakeExtent.fakeStartDate=+brush.extent()[0];
-                        if(!fakeExtent.fakeEndDate) fakeExtent.fakeEndDate=+brush.extent()[1];
+                        if(!fakeExtent.fakeStartDate) fakeExtent.fakeStartDate=+startDate;
+                        if(!fakeExtent.fakeEndDate) fakeExtent.fakeEndDate=+endDate;
                         brushExtent={
                             startDate:fakeExtent.fakeStartDate,
                             endDate:fakeExtent.fakeEndDate,
-                            realStartDate:+brush.extent()[0],
-                            realEndDate:+brush.extent()[1]
+                            realStartDate:+startDate,
+                            realEndDate:+endDate
                         };
                     }
-                    dispatch.customBrushSelection(brushExtent);
+                    dispatch.call('customBrushSelection',null,brushExtent)
                 }
 
                 // function for the y grid lines
@@ -1050,7 +1056,7 @@
                     var request={timeInterval:currentTimeBin};
                     if(timebin_zoomstart!==currentTimeBin){
                         showTimelineLoading();
-                        dispatch.customDataFetch(request);
+                        dispatch.call('customDataFetch',null,request);
                     }
                 }
 
