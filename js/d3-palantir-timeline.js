@@ -397,7 +397,6 @@
                     ); // elements are drawn in the order they are specified in the document, so later elements will be drawn on top of earlier elements.
 
                 // Add a group for each row of data
-
                 groups = svg.append('g')
                     .attr('clip-path', 'url(#clip)')
                     .selectAll("g.rgroups")
@@ -429,7 +428,7 @@
                         return xScale(d.Date);
                     })
                     .attr("y", function (d) {
-                        return  - (- yScale(d.y) + height * 2);
+                        return  - (-yScale(d.y0)- yScale(d.y) + height * 2);
                     })
                     .attr("height", function (d) {
                         return -yScale(d.y) + height;
@@ -825,7 +824,10 @@
 
                 // selction area
                 function brushed(){
-                    if(brush.x()(brush.extent()[0])===brush.x()(brush.extent()[1])){
+                    var selection=d3.event.selection;
+                    var start=selection[0];
+                    var end=selection[1];
+                    if(start===end){
                         gClose.style('visibility','hidden');
                         gTips.style('visibility','hidden');
                     }else{
@@ -834,20 +836,20 @@
                     }
 
                     gClose.select('rect')
-                        .attr('x',brush.x()(brush.extent()[1])-20);
+                        .attr('x',end-20);
                     gClose.select('text')
-                        .attr('x',brush.x()(brush.extent()[1])+1.5-20);
+                        .attr('x',end+1.5-20);
 
                     var gTipsWidth=d3_time_bin.get(currentTimeBin)[5][2];
                     gTips.select('rect')
-                        .attr('x',brush.x()(brush.extent()[0])-gTipsWidth-10)
+                        .attr('x',start-gTipsWidth-10)
                         .attr('width',gTipsWidth);
                     gTips.select('.startText')
-                        .attr('x',brush.x()(brush.extent()[0])+20-gTipsWidth-10)
-                        .text(currentTimeFormat(brush.extent()[0]));
+                        .attr('x',start+20-gTipsWidth-10)
+                        .text(currentTimeFormat(start));
                     gTips.select('.endText')
-                        .attr('x',brush.x()(brush.extent()[0])+20-gTipsWidth-10)
-                        .text(currentTimeFormat(brush.extent()[1]));
+                        .attr('x',start+20-gTipsWidth-10)
+                        .text(currentTimeFormat(end));
                     gXBrush_Extent.style('stroke','#686A6B');
                     _highlightBarChart();
                 }
@@ -1345,9 +1347,7 @@
             gYAxis.call(_make_y_axis(yScale));
             hideTimelineLoading();
             function _make_y_axis(yScale){
-                return d3.svg.axis()
-                    .scale(yScale)
-                    .orient("left")
+                return d3.axisLeft(yScale)
                     .ticks(6)
                     .tickSize(0)
                     .tickFormat(function (d) {
@@ -1379,7 +1379,7 @@
                 return xScale(d.Date);
             })
                 .attr("y", function (d) {
-                    return -(- yScale(d.y) + height * 2);
+                    return -(-yScale(d.y0)- yScale(d.y) + height * 2);
                 })
                 .attr("height", function (d) {
                     return -yScale(d.y) + height;
@@ -1394,7 +1394,7 @@
                     return xScale(d.Date);
                 })
                 .attr("y", function (d) {
-                    return -(- yScale(d.y) + height * 2);
+                    return -(-yScale(d.y0)- yScale(d.y) + height * 2);
                 })
                 .attr("height", function (d) {
                     return -yScale(d.y) + height;
@@ -1462,13 +1462,14 @@
                 return data.map(function (d) {
                     return {
                         Date : new Date(d.date),
-                        y : d.count
+                        y : d.count,
+                        y0:0
                     };
                 });
             });
             currentYaxisMaxValue=d3.max(dataSet, function (d) {
                 return d3.max(d, function (d) {
-                    return d.y;
+                    return d.y0+d.y;
                 });
             });
         };
