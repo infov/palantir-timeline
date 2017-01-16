@@ -278,7 +278,7 @@
                         if(d&&isInt(d)) return d;
                     });
 
-                var brush = d3.brush()
+                var brush = d3.brushX()
                     .on('start',brushstart)
                     .on('brush',brushed)
                     .on('end',brushend);
@@ -424,7 +424,7 @@
                     .duration(function (d, i) {
                         return 10 * i;// from 100->10
                     })
-                    // .ease("linear")
+                    .ease(d3.easeLinear)
                     .attr("x", function (d) {
                         return xScale(d.Date);
                     })
@@ -529,7 +529,6 @@
 
                 gXBrush_Background.style('cursor','default')
                     .on('mousedown',function(){
-                        // gHoverLine.style('visibility','visible');
                         gXBrush_Extent.style('stroke','#686A6B');
                     })
                     .on('mousemove',function(){
@@ -1336,7 +1335,7 @@
                         }).attr('y2',9);
                     }
                 }
-                zoom.scaleTo(svg,1);
+                // zoom.scaleTo(svg,1);
             });
         }
         var isInt=function(n){return Number(n) === n && n % 1 === 0;};
@@ -1467,7 +1466,6 @@
                     };
                 });
             });
-            // stack(dataSet);
             currentYaxisMaxValue=d3.max(dataSet, function (d) {
                 return d3.max(d, function (d) {
                     return d.y;
