@@ -279,6 +279,7 @@
 
                 var brush = d3.brushX()
                     .extent([[0,0],[width,height]])
+                    .on('start',brushstart)
                     .on('brush',brushed)
                     .on('end',brushend);
 
@@ -824,14 +825,8 @@
                     var end=selection[1];
                     var start_date=xScale.invert(start);
                     var end_date=xScale.invert(end);
-                    if(start===end){
-                        gClose.style('visibility','hidden');
-                        gTips.style('visibility','hidden');
-                    }else{
-                        gClose.style('visibility','visible');
-                        gTips.style('visibility','visible');
-                    }
-
+                    gClose.style('visibility','visible');
+                    gTips.style('visibility','visible');
                     gClose.select('rect')
                         .attr('x',end-20);
                     gClose.select('text')
@@ -849,6 +844,12 @@
                         .text(currentTimeFormat(end_date));
                     gXBrush_Extent.style('stroke','#686A6B');
                     _highlightBarChart();
+                }
+
+                function brushstart(){
+                    gClose.style('visibility','hidden');
+                    gTips.style('visibility','hidden');
+                    _removeHighlightForBarChart();
                 }
 
                 function brushend(){
