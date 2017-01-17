@@ -540,7 +540,7 @@
 
                 gClose.append('rect')
                     .attr('x',0)
-                    .attr('y',0)
+                    .attr('y',3)
                     .attr('rx',2)
                     .attr('ry',2)
                     .attr('width',14)
@@ -552,7 +552,7 @@
                     .attr('font-family','FontAwesome')
                     .text('\uf00d')
                     .attr('x',1.5)
-                    .attr('y',11)
+                    .attr('y',14)
                     .attr('dx',1)
                     .attr('fill','gray')
                     .style('cursor','pointer')
@@ -847,9 +847,9 @@
                 }
 
                 function brushstart(){
-                    gClose.style('visibility','hidden');
-                    gTips.style('visibility','hidden');
-                    _removeHighlightForBarChart();
+                    var selection=d3.brushSelection(gXBrush.node());
+                    var mouse_position=d3.mouse(this)[0];
+                    if(selection&&mouse_position==selection[0]) gClose.style('visibility','hidden'),gTips.style('visibility','hidden'),_removeHighlightForBarChart();
                 }
 
                 function brushend(){
@@ -1190,11 +1190,17 @@
                     }else if(zoomScale>d3_time_zoomScaleSteps[16]){
                         currentTimeBin=S1;
                     }
-
                     timeBin=d3_time_bin.get(currentTimeBin);
-                    x_axis=timeBin.xAxis;
+                    // x_axis=timeBin.xAxis;
+                    xScale=d3.event.transform.rescaleX(xScale);
+                    var latestXaxis=d3.axisBottom(xScale)
+                        .ticks(timeBin[3],1)
+                        .tickSizeOuter(0)
+                        .tickPadding(5)
+                        .tickFormat(timeBin[4]||customTimeFormat);
                     // apply x_axis
-                    gXAxis.call(x_axis);
+                    gXAxis.call(latestXaxis);
+                    // gXAxis.call(x_axis);
                     // apply sp Tick Size
                     _customizedTickSize();
                     // refresh barWidth

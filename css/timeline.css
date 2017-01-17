@@ -13,12 +13,6 @@
 .timeline-container svg .rgroups > .selected {
   fill: #dbb510 !important;
 }
-.timeline-container svg .axis path,
-.timeline-container svg .axis line {
-  fill: none;
-  stroke: black;
-  shape-rendering: crispEdges;
-}
 .timeline-container svg .axis.y > .tick > text {
   fill: gray;
 }
