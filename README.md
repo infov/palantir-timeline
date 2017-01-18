@@ -1,7 +1,7 @@
 # Palantir Timeline Chart
 A D3 timeline chart. Good for displaying timeline data. 
 
-
+![Chart example](misc/timeline.png?raw=true)
 
 
 
