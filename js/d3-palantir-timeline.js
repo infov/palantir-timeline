@@ -1346,7 +1346,6 @@
                         }).attr('y2',9);
                     }
                 }
-                // zoom.scaleTo(svg,1);
             });
         }
         var isInt=function(n){return Number(n) === n && n % 1 === 0;};
