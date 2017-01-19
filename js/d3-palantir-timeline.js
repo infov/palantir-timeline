@@ -289,7 +289,8 @@
                     .scaleExtent([1,20000000])
                     .on('start',zoomstart)
                     .on("zoom", zoomed)
-                    .on('end',debounce(zoomend,50));
+                    .on('end',debounce(zoomend,50))
+                    .filter(function(){return true;});
                 //Create SVG element
                 if(!svgContainer){
                     svgContainer=d3.select(this).append("svg")
@@ -468,7 +469,7 @@
                         d3.event.stopPropagation();
                     }else if(d3.event.button===2){
                         d3.event.stopImmediatePropagation();
-                        svg.on('mousedown.zoom').call(this);
+                        svg.on('mousedown.zoom').call(svg.node());
                         d3.select('.brush .overlay').style('cursor','move');
                         _clearBrush(2);
                     }
