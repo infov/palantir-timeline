@@ -1156,8 +1156,7 @@
                 }
 
                 function _refreshXaxisByZoomScale(zoomScale,buttonFlag,mouseX){
-                    var x_axis,
-                        timeBin;
+                    var timeBin;
                     if(zoomScale<d3_time_zoomScaleSteps[0]){
                         currentTimeBin=Mon3;
                     }else if(zoomScale<d3_time_zoomScaleSteps[1]){
@@ -1195,7 +1194,9 @@
                     }
                     timeBin=d3_time_bin.get(currentTimeBin);
                     // apply x_axis
-                    gXAxis.call(xAxis.scale(d3.event.transform.rescaleX(xScale)));
+                    gXAxis.call(xAxis.scale(d3.event.transform.rescaleX(xScale))
+                        .ticks(timeBin[3],1).tickSizeOuter(0).tickPadding(5)
+                        .tickFormat(timeBin[4]||customTimeFormat));
                     // apply sp Tick Size
                     _customizedTickSize();
                     // refresh barWidth
