@@ -44,6 +44,7 @@
         var xScale;
         var hackBarWidth;
         var timebin_zoomstart;
+        var xAxis;
         var dispatch = d3.dispatch('customDataFetch','customBrushSelection');
         var stack = d3.stack();
         function exports(_selection) {
@@ -260,15 +261,16 @@
                     return binArray;
                 }
 
-                _calculateCurrentBarWidth(d3_time_bin.get(currentTimeBin));
                 var yScale = d3.scaleLinear()
                     .domain([0,currentYaxisMaxValue])
                     .range([height, 0]);
-                var xAxis = d3.axisBottom(xScale)
+                xAxis = d3.axisBottom(xScale)
                     .ticks(d3.timeYear,1)
                     .tickSizeOuter(0)
                     .tickPadding(5)
                     .tickFormat(customTimeFormat);
+
+                _calculateCurrentBarWidth(d3_time_bin.get(currentTimeBin));
 
                 var yAxis = d3.axisLeft(yScale)
                     .ticks(6)
@@ -425,7 +427,7 @@
                     })
                     .ease(d3.easeLinear)
                     .attr("x", function (d) {
-                        return xScale(d.Date);
+                        return xAxis.scale()(d.Date);
                     })
                     .attr("y", function (d) {
                         return  - (-yScale(d.y0)- yScale(d.y) + height * 2);
@@ -499,7 +501,7 @@
                         .attr('x',xPosition-rectWidth/2)
                         .attr('width',rectWidth);
                     hoverLineText.attr('x',xPosition+6-rectWidth/2)
-                        .text(currentTimeFormat(xScale.invert(xPosition)));
+                        .text(currentTimeFormat(xAxis.scale().invert(xPosition)));
                     gHoverLine.style('visibility','visible');
                 }
 
@@ -631,7 +633,7 @@
                     .style('font-size','12px')
                     .style('fill','gray')
                     .text(function(){
-                        return 'Showing '+currentTimeFormat(xScale.domain()[0])+' through '+currentTimeFormat(xScale.domain()[1]);
+                        return 'Showing '+currentTimeFormat(xAxis.scale().domain()[0])+' through '+currentTimeFormat(xAxis.scale().domain()[1]);
                     });
                 var gBinSize=svg.append('g')
                     .attr('class','bin-size')
@@ -823,8 +825,8 @@
                     if(!(selection=d3.event.selection)) return;
                     var start=selection[0];
                     var end=selection[1];
-                    var start_date=xScale.invert(start);
-                    var end_date=xScale.invert(end);
+                    var start_date=xAxis.scale().invert(start);
+                    var end_date=xAxis.scale().invert(end);
                     gClose.style('visibility','visible');
                     gTips.style('visibility','visible');
                     gClose.select('rect')
@@ -859,8 +861,8 @@
                 // return hacked range for brush extent
                 function _calculateHackBrushExtent(){
                     var node=gXBrush.node();
-                    var startDate=xScale.invert(d3.brushSelection(node)[0]);
-                    var endDate=xScale.invert(d3.brushSelection(node)[1]);
+                    var startDate=xAxis.scale().invert(d3.brushSelection(node)[0]);
+                    var endDate=xAxis.scale().invert(d3.brushSelection(node)[1]);
                     var rects=groups.selectAll("rect");
                     var brushArrayOnlyLeftIn=[];
                     var brushArrayOnlyRightIn=[];
@@ -894,8 +896,8 @@
                     var selection=d3.event.selection;
                     var start=selection[0];
                     var end=selection[1];
-                    var start_date=xScale.invert(start);
-                    var end_date=xScale.invert(end);
+                    var start_date=xAxis.scale().invert(start);
+                    var end_date=xAxis.scale().invert(end);
                     rects.classed('selected',function(d){
                         var is_brushed_left = +start_date <= +d.Date && +d.Date <= +end_date;
                         var maxDate=_calculateMaxDateForOneBar(d.Date);//msec
@@ -1003,8 +1005,8 @@
                     if(!selection){
                         brushExtent=null;
                     }else{
-                        startDate=xScale.invert(selection[0]);
-                        endDate=xScale.invert(selection[1]);
+                        startDate=xAxis.scale().invert(selection[0]);
+                        endDate=xAxis.scale().invert(selection[1]);
                         var fakeExtent=_calculateHackBrushExtent();
                         if(!fakeExtent.fakeStartDate) fakeExtent.fakeStartDate=+startDate;
                         if(!fakeExtent.fakeEndDate) fakeExtent.fakeEndDate=+endDate;
@@ -1120,7 +1122,7 @@
                 }
 
                 function _calculateCurrentBarWidth(axisBinSize){
-                    var xScale_copy=xScale.copy();
+                    var xScale_copy=xAxis.scale().copy();
                     var xScale_ticks=xScale_copy.ticks(axisBinSize[0],axisBinSize[1]);
                     if(xScale_ticks.length>2){
                         var val1=xScale_copy(xScale_ticks[1])-xScale_copy(xScale_ticks[0]);
@@ -1191,16 +1193,8 @@
                         currentTimeBin=S1;
                     }
                     timeBin=d3_time_bin.get(currentTimeBin);
-                    // x_axis=timeBin.xAxis;
-                    xScale=d3.event.transform.rescaleX(xScale);
-                    var latestXaxis=d3.axisBottom(xScale)
-                        .ticks(timeBin[3],1)
-                        .tickSizeOuter(0)
-                        .tickPadding(5)
-                        .tickFormat(timeBin[4]||customTimeFormat);
                     // apply x_axis
-                    gXAxis.call(latestXaxis);
-                    // gXAxis.call(x_axis);
+                    gXAxis.call(xAxis.scale(d3.event.transform.rescaleX(xScale)));
                     // apply sp Tick Size
                     _customizedTickSize();
                     // refresh barWidth
@@ -1300,7 +1294,7 @@
 
                     function _refreshAxisExtentContent(){
                         axisExtentText.text(function(){
-                            return 'Showing '+currentTimeFormat(xScale.domain()[0])+' through '+currentTimeFormat(xScale.domain()[1]);
+                            return 'Showing '+currentTimeFormat(xAxis.scale().domain()[0])+' through '+currentTimeFormat(xAxis.scale().domain()[1]);
                         });
                     }
 
@@ -1389,7 +1383,7 @@
             var enter = update.enter();
             var exit = update.exit();
             update.attr("x", function (d) {
-                return xScale(d.Date);
+                return xAxis.scale()(d.Date);
             })
                 .attr("y", function (d) {
                     return -(-yScale(d.y0)- yScale(d.y) + height * 2);
@@ -1404,7 +1398,7 @@
 
             enter.append('rect')
                 .attr("x", function (d) {
-                    return xScale(d.Date);
+                    return xAxis.scale()(d.Date);
                 })
                 .attr("y", function (d) {
                     return -(-yScale(d.y0)- yScale(d.y) + height * 2);
@@ -1430,7 +1424,7 @@
                 var day=date.getDate();
                 if(currentTimeBin==Mon3){
                     if(month==0||month==3||month==6||month==9){
-                        return xScale(new Date(year,month+3))-xScale(date)
+                        return xAxis.scale()(new Date(year,month+3))-xAxis.scale()(date)
                     }else {
                         return currentBarWidth;
                     }
