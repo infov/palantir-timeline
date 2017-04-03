@@ -5,11 +5,11 @@ A D3 timeline chart. Good for displaying timeline data.
 
 
 
-###Implementation
+## Implementation
 
 The implementation follows the [reusable charts](http://bost.ocks.org/mike/chart/) convention proposed by Mike Bostock.
 
-###License
+## License
 
 MIT License
 
