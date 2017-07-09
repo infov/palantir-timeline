@@ -1,12 +1,13 @@
 # Palantir Timeline Chart
 A D3 timeline chart. Good for displaying timeline data. 
 
+Palantir Labs Timeline:https://www.youtube.com/watch?v=JCgDW5bru9M
+
 ![Chart example](misc/timeline.png?raw=true)
 
 
 
 ## Implementation
-
 The implementation follows the [reusable charts](http://bost.ocks.org/mike/chart/) convention proposed by Mike Bostock.
 
 ## License
